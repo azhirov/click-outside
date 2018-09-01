@@ -7,6 +7,34 @@ function validate(binding) {
   return true
 }
 
+function iePath(evt) {
+  var path = (evt.composedPath && evt.composedPath()) || evt.path,
+      target = evt.target;
+
+  if (path != null) {
+      // Safari doesn't include Window, but it should.
+      return (path.indexOf(window) < 0) ? path.concat(window) : path;
+  }
+
+  if (target === window) {
+      return [window];
+  }
+
+  function getParents(node, memo) {
+      memo = memo || [];
+      var parentNode = node.parentNode;
+
+      if (!parentNode) {
+          return memo;
+      }
+      else {
+          return getParents(parentNode, memo.concat(parentNode));
+      }
+  }
+
+  return [target].concat(getParents(target), window);
+}
+
 function isPopup(popupItem, elements) {
   if (!popupItem || !elements)
     return false
@@ -40,7 +68,7 @@ exports = module.exports = {
       if (!vNode.context) return
 
       // some components may have related popup item, on which we shall prevent the click outside event handler.
-      var elements = e.path || (e.composedPath && e.composedPath())
+      var elements = iePath(e);
       elements && elements.length > 0 && elements.unshift(e.target)
       
       if (el.contains(e.target) || isPopup(vNode.context.popupItem, elements)) return
