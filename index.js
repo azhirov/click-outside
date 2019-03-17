@@ -67,6 +67,10 @@ exports = module.exports = {
     function handler(e) {
       if (!vNode.context) return
 
+      binding.args = binding.args || {}
+      const isActive = (binding.args.closeConditional || function() { return true; })
+      if (!e || isActive(e) === false) return;
+
       // some components may have related popup item, on which we shall prevent the click outside event handler.
       var elements = iePath(e);
       elements && elements.length > 0 && elements.unshift(e.target)
